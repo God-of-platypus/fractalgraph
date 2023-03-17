@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <unordered_map>
 
 struct Node {
     unsigned int vertex_num; // number between 0 and n-1
@@ -12,20 +13,27 @@ struct graphEdge {
     Node end_node;
 };
 
-
 class FractalGraph {
 public:
     FractalGraph(unsigned int number_vertexes, unsigned number_intern_graph);
 
     void add_edge(graphEdge edge);
 
-    FractalGraph(unsigned int number_vertexes, unsigned number_intern_graph, graphEdge edges[], size_t nb_edges);
+    void add_edges(std::vector<graphEdge>& edges);
+
+    FractalGraph(unsigned int number_vertexes, unsigned number_intern_graph, graphEdge edges[], std::size_t nb_edges);
 
     FractalGraph(unsigned int number_vertexes, unsigned number_intern_graph, std::vector<graphEdge>& edges);
 
     [[nodiscard]] std::vector<Node> get_adjacency_list(Node node) const;
 
     [[nodiscard]] std::vector<std::vector<Node>> get_all_adjacency_lists() const;
+
+    void print_adjacency_matrix() const;
+
+    void print_adjacency_lists() const;
+
+    bool dfs(Node start, Node end, std::vector<unsigned int> depth = {}) const;
 
 private:
     const unsigned int number_vertexes_;

@@ -1,15 +1,135 @@
 #include <iostream>
 #include "graph.hh"
 
-int main()
-{
+void test1() {
     FractalGraph fractalGraph(2, 2);
-    graphEdge edge = {{0, 0}, {0 ,1 }};
-    fractalGraph.add_edge(edge);
-    auto test = fractalGraph.get_adjacency_list({0, 0});
-    std::cout << test.size() << '\n';
-    for (auto i : test)
-    {
-        std::cout << "vertex: " << i.vertex_num << " graph_num: " << i.graph_num << "\n";
+    fractalGraph.add_edge({{0, 0},
+                           {0, 1}});
+    fractalGraph.add_edge({{1, 0},
+                           {1, 1}});
+    fractalGraph.add_edge({{1, 1},
+                           {0, 1}});
+    fractalGraph.print_adjacency_matrix();
+    std::cout << "------------------------------------------------------------\n";
+
+    fractalGraph.print_adjacency_lists();
+    std::cout << "------------------------------------------------------------\n";
+
+    if (fractalGraph.dfs({0, 0}, {0, 1})) {
+        std::cout << "OK: There is a path between (0,0) and (0,1)\n";
+    } else {
+        std::cout << "KO: There isn't a path between (0,0) and (0,1)\n";
     }
+
+    std::cout << "------------------------------------------------------------\n";
+    if (fractalGraph.dfs({0, 0}, {1, 0})) {
+        std::cout << "OK: There is a path between (0,0) and (1,0)\n";
+    } else {
+        std::cout << "KO: There isn't a path between (0,0) and (1,0)\n";
+    }
+
+    std::cout << "------------------------------------------------------------\n";
+    if (fractalGraph.dfs({1, 0}, {0, 0})) {
+        std::cout << "OK: There is a path between (1,0) and (0,0)\n";
+    } else {
+        std::cout << "KO: There isn't a path between (1,0) and (0,0)\n";
+    }
+
+    std::cout << "------------------------------------------------------------\n";
+    if (fractalGraph.dfs({1, 0}, {0, 1})) {
+        std::cout << "OK: There is a path between (1,0) and (0,1)\n";
+    } else {
+        std::cout << "KO: There isn't a path between (1,0) and (0,1)\n";
+    }
+
+    std::cout << "------------------------------------------------------------\n";
+    if (fractalGraph.dfs({0, 0}, {1, 1})) {
+        std::cout << "OK: There is a path between (0,0) and (1,1)\n";
+    } else {
+        std::cout << "KO: There isn't a path between (0,0) and (1,1)\n";
+    }
+
+    std::cout << "------------------------------------------------------------\n";
+    if (fractalGraph.dfs({1, 0}, {0, 2})) {
+        std::cout << "KO: There is a path between (1,0) and (0,2)\n";
+    } else {
+        std::cout << "OK: There isn't a path between (1,0) and (0,2)\n";
+    }
+}
+
+void test2() {
+    FractalGraph fractalGraph(3, 2);
+    fractalGraph.add_edge({{0, 0},
+                           {1, 1}});
+    fractalGraph.add_edge({{1, 0},
+                           {2, 1}});
+    fractalGraph.add_edge({{2, 0},
+                           {0, 1}});
+    fractalGraph.add_edge({{0, 0},
+                           {2, 2}});
+    fractalGraph.add_edge({{1, 0},
+                           {0, 2}});
+    fractalGraph.add_edge({{2, 0},
+                           {1, 2}});
+    fractalGraph.add_edge({{2, 1},
+                           {1, 1}});
+    fractalGraph.print_adjacency_lists();
+    std::cout << "------------------------------------------------------------\n";
+    if (fractalGraph.dfs({0, 0}, {1, 0})) {
+        std::cout << "OK: There is a path between (0,0) and (1,0)\n";
+    } else {
+        std::cout << "KO: There isn't a path between (0,0) and (1,0)\n";
+    }
+
+    std::cout << "------------------------------------------------------------\n";
+    if (fractalGraph.dfs({0, 0}, {1, 1})) {
+        std::cout << "OK: There is a path between (0,0) and (1,1)\n";
+    } else {
+        std::cout << "KO: There isn't a path between (0,0) and (1,1)\n";
+    }
+
+    std::cout << "------------------------------------------------------------\n";
+    if (fractalGraph.dfs({2, 0}, {1, 1})) {
+        std::cout << "OK: There is a path between (2,0) and (1,1)\n";
+    } else {
+        std::cout << "KO: There isn't a path between (2,0) and (1,1)\n";
+    }
+}
+
+void test3() {
+    FractalGraph fg(2, 2);
+
+    fg.add_edge({{0, 0},
+                 {0, 1}});
+    fg.add_edge({{1, 1},
+                 {0, 2}});
+    fg.add_edge({{1, 2},
+                 {1, 0}});
+
+    fg.print_adjacency_lists();
+    std::cout << "------------------------------------------------------------\n";
+    if (fg.dfs({0, 0}, {1, 0})) {
+        std::cout << "OK: There is a path between (0,0) and (1,0)\n";
+    } else {
+        std::cout << "KO: There isn't a path between (0,0) and (1,0)\n";
+    }
+
+    std::cout << "------------------------------------------------------------\n";
+    if (fg.dfs({0, 0}, {1, 1})) {
+        std::cout << "OK: There is a path between (0,0) and (1,1)\n";
+    } else {
+        std::cout << "KO: There isn't a path between (0,0) and (1,1)\n";
+    }
+
+}
+
+int main() {
+    std::cout << "test 1 \n\n";
+    test1();
+
+    std::cout << "------------------------------------------------------------\ntest 2 \n\n";
+    test2();
+
+    std::cout << "------------------------------------------------------------\ntest 3\n\n";
+    test3();
 }
