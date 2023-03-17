@@ -139,41 +139,29 @@ bool FractalGraph::dfs(Node start, Node end, std::vector<unsigned int> depth) co
     }
     auto list_start = this->get_adjacency_list(start);
     auto list_end = this->get_adjacency_list(end);
-    if (start.graph_num != end.graph_num)
-    {
+    if (start.graph_num != end.graph_num) {
         auto new_start = filter_same_graph(end.graph_num, list_start);
         auto new_end = filter_same_graph(start.graph_num, list_end);
-        if (!new_start.empty())
-        {
-            for (const auto& node: new_start)
-            {
+        if (!new_start.empty()) {
+            for (const auto &node: new_start) {
                 auto new_depth = depth;
                 new_depth.push_back(node.graph_num);
-                if (dfs(node, end, new_depth))
-                {
+                if (dfs(node, end, new_depth)) {
                     return true;
                 }
             }
-        }
-        else if (!new_end.empty())
-        {
-            for (const auto& node: new_end)
-            {
+        } else if (!new_end.empty()) {
+            for (const auto &node: new_end) {
                 auto new_depth = depth;
                 new_depth.push_back(node.graph_num);
-                if (dfs(start, node, new_depth))
-                {
+                if (dfs(start, node, new_depth)) {
                     return true;
                 }
             }
-        }
-        else
-        {
-            for (const auto& node_start: list_start)
-            {
+        } else {
+            for (const auto &node_start: list_start) {
                 auto new_end2 = filter_same_graph(node_start.graph_num, list_end);
-                for (const auto& node_end: new_end2)
-                {
+                for (const auto &node_end: new_end2) {
                     return true;
                 }
             }
@@ -193,24 +181,14 @@ bool FractalGraph::dfs(Node start, Node end, std::vector<unsigned int> depth) co
     }
     for (const auto &node: list_start) {
         auto list_filter = filter_same_graph(node.graph_num, list_end);
-        if (list_filter.empty())
-        {
-            for (const auto& node_end: list_end)
-            {
-                if (dfs(node, node_end, depth))
-                {
-                    return true;
-                }
-            }
-        } else {
-            for (const auto &node_end: list_filter) {
-                auto new_depth = depth;
-                new_depth.push_back(node.graph_num);
-                if (dfs({node.vertex_num, 0}, {node_end.vertex_num, 0}, new_depth)) {
-                    return true;
-                }
+        for (const auto &node_end: list_filter) {
+            auto new_depth = depth;
+            new_depth.push_back(node.graph_num);
+            if (dfs({node.vertex_num, 0}, {node_end.vertex_num, 0}, new_depth)) {
+                return true;
             }
         }
+
     }
     return false;
 }
