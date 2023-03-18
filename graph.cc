@@ -1,4 +1,6 @@
 #include <iostream>
+#include <map>
+#include <utility>
 #include "graph.hh"
 
 FractalGraph::FractalGraph(unsigned int number_vertexes, unsigned int number_intern_graph)
@@ -133,10 +135,35 @@ static std::vector<Node> filter_same_graph(unsigned int graph_num, const std::ve
     return res;
 }
 
-bool FractalGraph::dfs(Node start, Node end, std::vector<unsigned int> depth) const {
+bool equal_node(Node node1, Node node2) {
+    return node1.graph_num == node2.graph_num && node1.vertex_num == node2.vertex_num;
+}
+
+bool equal_edges(graphEdge edge1, graphEdge edge2) {
+    return equal_node(edge1.start_node, edge2.start_node) && equal_node(edge1.end_node, edge2.end_node);
+}
+
+static bool
+checkMap(std::multimap<std::vector<unsigned int>, graphEdge> map, std::vector<unsigned int> depth, graphEdge edge) {
+    auto range = map.equal_range(depth);
+    for (auto i = range.first; i != range.second; i++) {
+        if (equal_edges(edge, i->second)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool FractalGraph::dfs(Node start, Node end, const std::vector<unsigned int> &depth,
+                       std::multimap<std::vector<unsigned int>, graphEdge> map) const {
     if (start.vertex_num == end.vertex_num && start.graph_num == end.graph_num) {
         return true;
     }
+
+    if (checkMap(map, depth, {start, end})) {
+        return false;
+    }
+
     auto list_start = this->get_adjacency_list(start);
     auto list_end = this->get_adjacency_list(end);
     if (start.graph_num != end.graph_num) {
@@ -146,7 +173,7 @@ bool FractalGraph::dfs(Node start, Node end, std::vector<unsigned int> depth) co
             for (const auto &node: new_start) {
                 auto new_depth = depth;
                 new_depth.push_back(node.graph_num);
-                if (dfs(node, end, new_depth)) {
+                if (dfs(node, end, new_depth, map)) {
                     return true;
                 }
             }
@@ -154,7 +181,7 @@ bool FractalGraph::dfs(Node start, Node end, std::vector<unsigned int> depth) co
             for (const auto &node: new_end) {
                 auto new_depth = depth;
                 new_depth.push_back(node.graph_num);
-                if (dfs(start, node, new_depth)) {
+                if (dfs(start, node, new_depth, map)) {
                     return true;
                 }
             }
@@ -162,7 +189,9 @@ bool FractalGraph::dfs(Node start, Node end, std::vector<unsigned int> depth) co
             for (const auto &node_start: list_start) {
                 auto new_end2 = filter_same_graph(node_start.graph_num, list_end);
                 for (const auto &node_end: new_end2) {
-                    return true;
+                    if (dfs(node_start, node_end, depth, map)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -177,6 +206,7 @@ bool FractalGraph::dfs(Node start, Node end, std::vector<unsigned int> depth) co
         }
     }
     if (depth.size() >= this->number_vertexes_ * this->number_vertexes_) {
+        map.insert({depth, {start, end}});
         return false;
     }
     for (const auto &node: list_start) {
@@ -184,11 +214,106 @@ bool FractalGraph::dfs(Node start, Node end, std::vector<unsigned int> depth) co
         for (const auto &node_end: list_filter) {
             auto new_depth = depth;
             new_depth.push_back(node.graph_num);
-            if (dfs({node.vertex_num, 0}, {node_end.vertex_num, 0}, new_depth)) {
+            if (dfs({node.vertex_num, 0}, {node_end.vertex_num, 0}, new_depth, map)) {
                 return true;
             }
         }
 
     }
+    map.insert({depth, {start, end}});
     return false;
+}
+
+bool FractalGraph::dfs(Node start, Node end) const {
+    std::multimap<std::vector<unsigned int>, graphEdge> map;
+    std::vector<unsigned int> depth;
+    return dfs(start, end, std::move(depth), map);
+}
+
+std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector<unsigned int> &depth,
+                                         std::multimap<std::vector<unsigned int>, graphEdge> map) const {
+    if (start.vertex_num == end.vertex_num && start.graph_num == end.graph_num) {
+        return {start};
+    }
+
+    if (checkMap(std::move(map), std::move(depth), {start, end})) {
+        return {};
+    }
+
+    auto list_start = this->get_adjacency_list(start);
+    auto list_end = this->get_adjacency_list(end);
+    if (start.graph_num != end.graph_num) {
+        auto new_start = filter_same_graph(end.graph_num, list_start);
+        auto new_end = filter_same_graph(start.graph_num, list_end);
+        if (!new_start.empty()) {
+            for (const auto &node: new_start) {
+                auto new_depth = depth;
+                new_depth.push_back(node.graph_num);
+                auto path = dfs_path(node, end, new_depth, map);
+                if (!path.empty()) {
+                    path.insert(path.begin(), start);
+                    return path;
+                }
+
+            }
+        } else if (!new_end.empty()) {
+            for (const auto &node: new_end) {
+                auto new_depth = depth;
+                new_depth.push_back(node.graph_num);
+                auto path = dfs_path(start, node, new_depth, map);
+                if (!path.empty()) {
+                    path.push_back(node);
+                    return path;
+                }
+            }
+        } else {
+            for (const auto &node_start: list_start) {
+                auto new_end2 = filter_same_graph(node_start.graph_num, list_end);
+                for (const auto &node_end: new_end2) {
+                    auto path = dfs_path(node_start, node_end, depth, map);
+                    if (!path.empty()) {
+                        path.insert(path.begin(), node_start);
+                        path.push_back(node_end);
+                        return path;
+                    }
+                }
+            }
+        }
+        return {};
+    }
+    if (!depth.empty()) {
+        Node prev_level = {start.vertex_num, depth.back()};
+        auto list = this->get_adjacency_list(prev_level);
+        Node prev_end = {end.vertex_num, depth.back()};
+        if (find_node(prev_end, list)) {
+            return {prev_level, prev_end};
+        }
+    }
+    if (depth.size() >= this->number_vertexes_ * this->number_vertexes_) {
+        map.insert({depth, {start, end}});
+        return {};
+    }
+    for (const auto &node: list_start) {
+        auto list_filter = filter_same_graph(node.graph_num, list_end);
+        for (const auto &node_end: list_filter) {
+            auto new_depth = depth;
+            new_depth.push_back(node.graph_num);
+
+            auto path = dfs_path({node.vertex_num, 0}, {node_end.vertex_num, 0}, new_depth, map);
+            if (!path.empty()) {
+                path.insert(path.begin(), {node.vertex_num, 0});
+                path.push_back({node_end.vertex_num, 0});
+                return path;
+            }
+        }
+
+    }
+    map.insert({depth, {start, end}});
+    return {};
+}
+
+std::vector<Node> FractalGraph::dfs_path(Node start, Node end) const {
+    std::multimap<std::vector<unsigned int>, graphEdge> map;
+    std::vector<unsigned int> depth;
+    return dfs_path(start, end, std::move(depth), map);
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <unordered_map>
+#include <map>
 
 struct Node {
     unsigned int vertex_num; // number between 0 and n-1
@@ -33,11 +33,15 @@ public:
 
     void print_adjacency_lists() const;
 
-    bool dfs(Node start, Node end, std::vector<unsigned int> depth = {}) const;
+    [[nodiscard]] bool dfs(Node start, Node end) const;
+
+    [[nodiscard]] std::vector<Node> dfs_path(Node start, Node end) const;
 
 private:
     const unsigned int number_vertexes_;
     const unsigned int number_intern_graph_;
     std::vector<std::vector<int>> adjacency_matrix_;
+    [[nodiscard]] bool dfs(Node start, Node end,const std::vector<unsigned int>& depth, std::multimap<std::vector<unsigned int>,graphEdge> map) const;
+    [[nodiscard]] std::vector<Node> dfs_path(Node start, Node end, const std::vector<unsigned int>& depth, std::multimap<std::vector<unsigned int>,graphEdge> map) const;
 };
 
