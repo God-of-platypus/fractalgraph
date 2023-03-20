@@ -231,12 +231,16 @@ bool FractalGraph::dfs(Node start, Node end) const {
 }
 
 std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector<unsigned int> &depth,
-                                         std::multimap<std::vector<unsigned int>, graphEdge> map) const {
+                                         std::multimap<std::vector<unsigned int>, graphEdge>& map) const {
     if (start.vertex_num == end.vertex_num && start.graph_num == end.graph_num) {
-        return {start};
+        if (depth.empty()) {
+            return {start};
+        } else {
+            return {{start.vertex_num, depth.back()}};
+        }
     }
 
-    if (checkMap(std::move(map), std::move(depth), {start, end})) {
+    if (checkMap(std::move(map), depth, {start, end})) {
         return {};
     }
 
@@ -251,7 +255,11 @@ std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector
                 new_depth.push_back(node.graph_num);
                 auto path = dfs_path(node, end, new_depth, map);
                 if (!path.empty()) {
-                    path.insert(path.begin(), start);
+                    if (depth.empty()) {
+                        path.insert(path.begin(), start);
+                    } else {
+                        path.insert(path.begin(), {start.vertex_num, depth.back()});
+                    }
                     return path;
                 }
 
@@ -262,7 +270,11 @@ std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector
                 new_depth.push_back(node.graph_num);
                 auto path = dfs_path(start, node, new_depth, map);
                 if (!path.empty()) {
-                    path.push_back(node);
+                    if (depth.empty()) {
+                        path.push_back(end);
+                    } else {
+                        path.push_back({end.vertex_num, depth.back()});
+                    }
                     return path;
                 }
             }
@@ -272,8 +284,8 @@ std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector
                 for (const auto &node_end: new_end2) {
                     auto path = dfs_path(node_start, node_end, depth, map);
                     if (!path.empty()) {
-                        path.insert(path.begin(), node_start);
-                        path.push_back(node_end);
+                        path.insert(path.begin(), start);
+                        path.push_back(end);
                         return path;
                     }
                 }
@@ -301,8 +313,13 @@ std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector
 
             auto path = dfs_path({node.vertex_num, 0}, {node_end.vertex_num, 0}, new_depth, map);
             if (!path.empty()) {
-                path.insert(path.begin(), {node.vertex_num, 0});
-                path.push_back({node_end.vertex_num, 0});
+                if (depth.empty()) {
+                    path.insert(path.begin(), start);
+                    path.push_back(end);
+                } else {
+                    path.insert(path.begin(), {start.vertex_num, depth.back()});
+                    path.push_back({end.vertex_num, depth.back()});
+                }
                 return path;
             }
         }
@@ -315,5 +332,5 @@ std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector
 std::vector<Node> FractalGraph::dfs_path(Node start, Node end) const {
     std::multimap<std::vector<unsigned int>, graphEdge> map;
     std::vector<unsigned int> depth;
-    return dfs_path(start, end, std::move(depth), map);
+    return dfs_path(start, end, depth, map);
 }

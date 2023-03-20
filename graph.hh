@@ -42,6 +42,6 @@ private:
     const unsigned int number_intern_graph_;
     std::vector<std::vector<int>> adjacency_matrix_;
     [[nodiscard]] bool dfs(Node start, Node end,const std::vector<unsigned int>& depth, std::multimap<std::vector<unsigned int>,graphEdge> map) const;
-    [[nodiscard]] std::vector<Node> dfs_path(Node start, Node end, const std::vector<unsigned int>& depth, std::multimap<std::vector<unsigned int>,graphEdge> map) const;
+    [[nodiscard]] std::vector<Node> dfs_path(Node start, Node end, const std::vector<unsigned int>& depth, std::multimap<std::vector<unsigned int>,graphEdge>& map) const;
 };
 
