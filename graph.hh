@@ -25,6 +25,7 @@ public:
 
     FractalGraph(unsigned int number_vertexes, unsigned number_intern_graph, std::vector<graphEdge>& edges);
 
+
     [[nodiscard]] std::vector<Node> get_adjacency_list(Node node) const;
 
     [[nodiscard]] std::vector<std::vector<Node>> get_all_adjacency_lists() const;

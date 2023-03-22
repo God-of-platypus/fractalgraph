@@ -41,6 +41,7 @@ void FractalGraph::add_edges(std::vector<graphEdge> &edges) {
     }
 }
 
+
 FractalGraph::FractalGraph(unsigned int number_vertexes, unsigned int number_intern_graph, graphEdge *edges,
                            std::size_t nb_edges)
         : number_vertexes_(number_vertexes), number_intern_graph_(number_intern_graph) {
@@ -173,7 +174,7 @@ bool FractalGraph::dfs(Node start, Node end, const std::vector<unsigned int> &de
             for (const auto &node: new_start) {
                 auto new_depth = depth;
                 new_depth.push_back(node.graph_num);
-                if (dfs(node, end, new_depth, map)) {
+                if (dfs({node.vertex_num, 0}, {end.vertex_num, 0}, new_depth, map)) {
                     return true;
                 }
             }
@@ -181,7 +182,7 @@ bool FractalGraph::dfs(Node start, Node end, const std::vector<unsigned int> &de
             for (const auto &node: new_end) {
                 auto new_depth = depth;
                 new_depth.push_back(node.graph_num);
-                if (dfs(start, node, new_depth, map)) {
+                if (dfs({start.vertex_num, 0}, {node.vertex_num, 0}, new_depth, map)) {
                     return true;
                 }
             }
@@ -195,6 +196,7 @@ bool FractalGraph::dfs(Node start, Node end, const std::vector<unsigned int> &de
                 }
             }
         }
+        map.insert({depth, {start, end}});
         return false;
     }
     if (!depth.empty()) {
@@ -227,7 +229,7 @@ bool FractalGraph::dfs(Node start, Node end, const std::vector<unsigned int> &de
 bool FractalGraph::dfs(Node start, Node end) const {
     std::multimap<std::vector<unsigned int>, graphEdge> map;
     std::vector<unsigned int> depth;
-    return dfs(start, end, std::move(depth), map);
+    return dfs(start, end, depth, map);
 }
 
 std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector<unsigned int> &depth,
@@ -291,6 +293,7 @@ std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector
                 }
             }
         }
+        map.insert({depth, {start, end}});
         return {};
     }
     if (!depth.empty()) {

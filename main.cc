@@ -18,7 +18,8 @@ void test1() {
 
     auto path = fractalGraph.dfs_path({0, 0}, {0, 1});
     size_t n = path.size();
-    if (!path.empty()) {
+    auto b = fractalGraph.dfs({0,0}, {0, 1});
+    if (!path.empty() && b) {
         std::cout << "OK: There is a path between (0,0) and (0,1)\n";
         std::cout << "------------------------------------------------------------\n";
         for (size_t i = 0; i < n; i++) {
@@ -34,8 +35,9 @@ void test1() {
 
     std::cout << "------------------------------------------------------------\n";
     path = fractalGraph.dfs_path({0, 0}, {1, 0});
+    b = fractalGraph.dfs({0, 0}, {1, 0});
     n = path.size();
-    if (!path.empty()) {
+    if (!path.empty() && b) {
         std::cout << "OK: There is a path between (0,0) and (1,0)\n";
         std::cout << "------------------------------------------------------------\n";
         for (size_t i = 0; i < n; i++) {
@@ -51,8 +53,9 @@ void test1() {
 
     std::cout << "------------------------------------------------------------\n";
     path = fractalGraph.dfs_path({1, 0}, {0, 0});
+    b = fractalGraph.dfs({1, 0}, {0, 0});
     n = path.size();
-    if (!path.empty()) {
+    if (!path.empty() && b) {
         std::cout << "OK: There is a path between (1,0) and (0,0)\n";
         std::cout << "------------------------------------------------------------\n";
         for (size_t i = 0; i < n; i++) {
@@ -68,8 +71,9 @@ void test1() {
 
     std::cout << "------------------------------------------------------------\n";
     path = fractalGraph.dfs_path({1, 0}, {0, 1});
+    b = fractalGraph.dfs({1, 0}, {0, 1});
     n = path.size();
-    if (!path.empty()) {
+    if (!path.empty() && b) {
         std::cout << "OK: There is a path between (1,0) and (0,1)\n";
         std::cout << "------------------------------------------------------------\n";
         for (size_t i = 0; i < n; i++) {
@@ -85,8 +89,9 @@ void test1() {
 
     std::cout << "------------------------------------------------------------\n";
     path = fractalGraph.dfs_path({0, 0}, {1, 1});
+    b = fractalGraph.dfs({0, 0}, {1, 1});
     n = path.size();
-    if (!path.empty()) {
+    if (!path.empty() && b) {
         std::cout << "OK: There is a path between (0,0) and (1,1)\n";
         std::cout << "------------------------------------------------------------\n";
         for (size_t i = 0; i < n; i++) {
@@ -101,7 +106,10 @@ void test1() {
     }
 
     std::cout << "------------------------------------------------------------\n";
-    if (fractalGraph.dfs({1, 0}, {0, 2})) {
+    path = fractalGraph.dfs_path({1, 0}, {0, 2});
+    b = fractalGraph.dfs({1, 0}, {0, 2});
+    n = path.size();
+    if (!path.empty() && b) {
         std::cout << "KO: There is a path between (1,0) and (0,2)\n";
     } else {
         std::cout << "OK: There isn't a path between (1,0) and (0,2)\n";
@@ -220,6 +228,12 @@ void test3() {
         std::cout << "OK: There isn't a path between (0,0) and (1,1)\n";
     }
 
+}
+
+void test4()
+{
+    FractalGraph fg(7,3);
+    fg.add_edge({{0,0}, {1, 4}});
 }
 
 int main() {
