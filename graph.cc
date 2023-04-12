@@ -1,6 +1,7 @@
 #include <iostream>
 #include <map>
 #include <utility>
+#include <queue>
 #include "graph.hh"
 
 FractalGraph::FractalGraph(unsigned int number_vertexes, unsigned int number_intern_graph)
@@ -76,6 +77,30 @@ FractalGraph::FractalGraph(unsigned int number_vertexes, unsigned int number_int
     }
 }
 
+FractalGraph::FractalGraph(unsigned int number_vertexes, unsigned int number_intern_graph, unsigned int nb_edges)
+        : number_vertexes_(number_vertexes), number_intern_graph_(number_intern_graph) {
+    unsigned int length = number_vertexes_ * (number_intern_graph_ + 1);
+    for (unsigned int i = 0; i < length; i++) {
+        std::vector<int> line;
+        for (unsigned int j = 0; j < length; j++) {
+            line.push_back(0);
+        }
+        adjacency_matrix_.push_back(line);
+    }
+    std::random_device rd;  // Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> vertexes(0, number_vertexes_ - 1);
+    std::uniform_int_distribution<> intern_graphs(0, number_intern_graph_);
+    for (unsigned int i = 0; i < nb_edges; i++) {
+        unsigned int a = vertexes(gen);
+        unsigned int b = intern_graphs(gen);
+        unsigned int c = vertexes(gen);
+        unsigned int d = intern_graphs(gen);
+        this->add_edge({{a, b},
+                        {c, d}});
+    }
+}
+
 std::vector<Node> FractalGraph::get_adjacency_list(Node node) const {
     unsigned int pos = node.vertex_num + number_vertexes_ * node.graph_num;
     unsigned int length = number_vertexes_ * (number_intern_graph_ + 1);
@@ -136,7 +161,7 @@ static std::vector<Node> filter_same_graph(unsigned int graph_num, const std::ve
     return res;
 }
 
-bool equal_node(Node node1, Node node2) {
+inline bool equal_node(Node node1, Node node2) {
     return node1.graph_num == node2.graph_num && node1.vertex_num == node2.vertex_num;
 }
 
@@ -157,7 +182,7 @@ checkMap(std::multimap<std::vector<unsigned int>, graphEdge> map, std::vector<un
 
 bool FractalGraph::dfs(Node start, Node end, const std::vector<unsigned int> &depth,
                        std::multimap<std::vector<unsigned int>, graphEdge> map) const {
-    if (start.vertex_num == end.vertex_num && start.graph_num == end.graph_num) {
+    if (equal_node(start, end)) {
         return true;
     }
 
@@ -233,8 +258,8 @@ bool FractalGraph::dfs(Node start, Node end) const {
 }
 
 std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector<unsigned int> &depth,
-                                         std::multimap<std::vector<unsigned int>, graphEdge>& map) const {
-    if (start.vertex_num == end.vertex_num && start.graph_num == end.graph_num) {
+                                         std::multimap<std::vector<unsigned int>, graphEdge> &map) const {
+    if (equal_node(start, end)) {
         if (depth.empty()) {
             return {start};
         } else {
@@ -242,20 +267,29 @@ std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector
         }
     }
 
-    if (checkMap(std::move(map), depth, {start, end})) {
+    if (checkMap(map, depth, {start, end})) {
         return {};
     }
 
     auto list_start = this->get_adjacency_list(start);
     auto list_end = this->get_adjacency_list(end);
+    if (find_node(start, list_end)) {
+        if (depth.empty()) {
+            return {start, end};
+        } else {
+            return {{start.vertex_num, depth.back()},
+                    {end.vertex_num,   depth.back()}};
+        }
+    }
     if (start.graph_num != end.graph_num) {
         auto new_start = filter_same_graph(end.graph_num, list_start);
         auto new_end = filter_same_graph(start.graph_num, list_end);
         if (!new_start.empty()) {
             for (const auto &node: new_start) {
                 auto new_depth = depth;
-                new_depth.push_back(node.graph_num);
-                auto path = dfs_path(node, end, new_depth, map);
+                if (node.graph_num != 0)
+                    new_depth.push_back(node.graph_num);
+                auto path = dfs_path({node.vertex_num, 0}, {end.vertex_num, 0}, new_depth, map);
                 if (!path.empty()) {
                     if (depth.empty()) {
                         path.insert(path.begin(), start);
@@ -270,7 +304,7 @@ std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector
             for (const auto &node: new_end) {
                 auto new_depth = depth;
                 new_depth.push_back(node.graph_num);
-                auto path = dfs_path(start, node, new_depth, map);
+                auto path = dfs_path({start.vertex_num, 0}, {node.vertex_num, 0}, new_depth, map);
                 if (!path.empty()) {
                     if (depth.empty()) {
                         path.push_back(end);
@@ -312,8 +346,8 @@ std::vector<Node> FractalGraph::dfs_path(Node start, Node end, const std::vector
         auto list_filter = filter_same_graph(node.graph_num, list_end);
         for (const auto &node_end: list_filter) {
             auto new_depth = depth;
-            new_depth.push_back(node.graph_num);
-
+            if (node.graph_num != 0)
+                new_depth.push_back(node.graph_num);
             auto path = dfs_path({node.vertex_num, 0}, {node_end.vertex_num, 0}, new_depth, map);
             if (!path.empty()) {
                 if (depth.empty()) {
@@ -336,4 +370,75 @@ std::vector<Node> FractalGraph::dfs_path(Node start, Node end) const {
     std::multimap<std::vector<unsigned int>, graphEdge> map;
     std::vector<unsigned int> depth;
     return dfs_path(start, end, depth, map);
+}
+
+bool FractalGraph::bfs(Node start, Node end) const {
+    std::queue<std::pair<std::vector<unsigned int>, graphEdge>> queue;
+    std::multimap<std::vector<unsigned int>, graphEdge> map;
+    std::vector<unsigned int> depth;
+    queue.push({depth, {start, end}});
+    while (!queue.empty()) {
+        auto pair = queue.front();
+        queue.pop();
+        auto new_depth = pair.first;
+        Node start_node = pair.second.start_node;
+        Node end_node = pair.second.end_node;
+        if (checkMap(map, new_depth, {start_node, end_node}))
+        {
+            continue;
+        }
+        if (equal_node(start_node, end_node)) {
+            return true;
+        }
+        auto list_start = this->get_adjacency_list(start_node);
+        auto list_end = this->get_adjacency_list(end_node);
+        if (start_node.graph_num != end_node.graph_num) {
+            auto new_start = filter_same_graph(end_node.graph_num, list_start);
+            auto new_end = filter_same_graph(start_node.graph_num, list_end);
+            if (!new_start.empty()) {
+                for (const auto &node_new_start: new_start) {
+                    auto ndepth = new_depth;
+                    ndepth.push_back(node_new_start.graph_num);
+                    queue.push({ndepth, {{node_new_start.vertex_num, 0}, {end_node.vertex_num, 0}}});
+                }
+            } else if (!new_end.empty()) {
+                for (const auto &node_new_end: new_end) {
+                    auto ndepth = new_depth;
+                    ndepth.push_back(node_new_end.graph_num);
+                    queue.push({ndepth, {{start_node.vertex_num, 0}, {node_new_end.vertex_num, 0}}});
+                }
+            } else {
+                for (const auto &node_new_start: new_start) {
+                    auto filtered_end = filter_same_graph(node_new_start.graph_num, new_start);
+                    for (const auto &node_new_end: filtered_end) {
+                        auto ndepth = new_depth;
+                        ndepth.push_back(node_new_start.graph_num);
+                        queue.push({ndepth, {{node_new_start.vertex_num, 0}, {node_new_end.vertex_num, 0}}});
+                    }
+                }
+            }
+        }
+        if (!new_depth.empty()) {
+            Node previous_level_start = {start_node.vertex_num, new_depth.back()};
+            auto list_prev = this->get_adjacency_list(previous_level_start);
+            Node previous_level_end = {end_node.vertex_num, new_depth.back()};
+            if (find_node(previous_level_end, list_prev)) {
+                return true;
+            }
+        }
+        if (new_depth.size() > this->number_vertexes_ * this->number_vertexes_) {
+            map.insert({new_depth, {start_node, end_node}});
+            continue;
+        }
+        for (const auto &node_new_start: list_start){
+            auto filtered_end = filter_same_graph(node_new_start.graph_num, list_end);
+            for (const auto &node_new_end: filtered_end) {
+                auto ndepth = new_depth;
+                ndepth.push_back(node_new_start.graph_num);
+                queue.push({ndepth, {{node_new_start.vertex_num, 0}, {node_new_end.vertex_num, 0}}});
+            }
+        }
+        map.insert({new_depth, {start_node, end_node}});
+    }
+    return false;
 }

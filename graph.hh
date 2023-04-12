@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <map>
+#include <random>
 
 struct Node {
     unsigned int vertex_num; // number between 0 and n-1
@@ -21,10 +22,12 @@ public:
 
     void add_edges(std::vector<graphEdge>& edges);
 
-    FractalGraph(unsigned int number_vertexes, unsigned number_intern_graph, graphEdge edges[], std::size_t nb_edges);
+    FractalGraph(unsigned int number_vertexes, unsigned int  number_intern_graph, graphEdge edges[], std::size_t nb_edges);
 
-    FractalGraph(unsigned int number_vertexes, unsigned number_intern_graph, std::vector<graphEdge>& edges);
+    FractalGraph(unsigned int number_vertexes, unsigned int  number_intern_graph, std::vector<graphEdge>& edges);
 
+
+    FractalGraph(unsigned int number_vertexes, unsigned int number_intern_graph, unsigned int nb_edges);
 
     [[nodiscard]] std::vector<Node> get_adjacency_list(Node node) const;
 
@@ -37,6 +40,8 @@ public:
     [[nodiscard]] bool dfs(Node start, Node end) const;
 
     [[nodiscard]] std::vector<Node> dfs_path(Node start, Node end) const;
+
+    [[nodiscard]] bool bfs(Node start, Node end) const;
 
 private:
     const unsigned int number_vertexes_;
