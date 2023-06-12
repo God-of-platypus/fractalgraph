@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/fractalgraph.dir/graph.cc.o CMakeFiles/fractalgraph.dir/main.cc.o -o fractalgraph 

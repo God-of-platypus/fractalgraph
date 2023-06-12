@@ -1,3 +1,0 @@
-/home/stan/fractalgraph/build/CMakeFiles/fractalgraph.dir
-/home/stan/fractalgraph/build/CMakeFiles/edit_cache.dir
-/home/stan/fractalgraph/build/CMakeFiles/rebuild_cache.dir
