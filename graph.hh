@@ -20,11 +20,12 @@ public:
 
     void add_edge(graphEdge edge);
 
-    void add_edges(std::vector<graphEdge>& edges);
+    void add_edges(std::vector<graphEdge> &edges);
 
-    FractalGraph(unsigned int number_vertexes, unsigned int  number_intern_graph, graphEdge edges[], std::size_t nb_edges);
+    FractalGraph(unsigned int number_vertexes, unsigned int number_intern_graph, graphEdge edges[],
+                 std::size_t nb_edges);
 
-    FractalGraph(unsigned int number_vertexes, unsigned int  number_intern_graph, std::vector<graphEdge>& edges);
+    FractalGraph(unsigned int number_vertexes, unsigned int number_intern_graph, std::vector<graphEdge> &edges);
 
 
     FractalGraph(unsigned int number_vertexes, unsigned int number_intern_graph, unsigned int nb_edges);
@@ -47,7 +48,21 @@ private:
     const unsigned int number_vertexes_;
     const unsigned int number_intern_graph_;
     std::vector<std::vector<int>> adjacency_matrix_;
-    [[nodiscard]] bool dfs(Node start, Node end,const std::vector<unsigned int>& depth, std::multimap<std::vector<unsigned int>,graphEdge> map) const;
-    [[nodiscard]] std::vector<Node> dfs_path(Node start, Node end, const std::vector<unsigned int>& depth, std::multimap<std::vector<unsigned int>,graphEdge>& map) const;
+
+    [[nodiscard]] bool dfs(Node start, Node end, const std::vector<unsigned int> &depth,
+                           std::multimap<std::vector<unsigned int>, graphEdge> map) const;
+
+    [[nodiscard]] std::vector<Node> dfs_path(Node start, Node end, const std::vector<unsigned int> &depth,
+                                             std::multimap<std::vector<unsigned int>, graphEdge> &map) const;
 };
 
+bool equal_node(Node node1, Node node2);
+
+bool equal_edges(graphEdge edge1, graphEdge edge2);
+
+bool
+checkMap(std::multimap<std::vector<unsigned int>, graphEdge> &map, const std::vector<unsigned int> &depth, graphEdge edge);
+
+std::vector<Node> filter_same_graph(unsigned int graph_num, const std::vector<Node> &nodes);
+
+bool find_node(const Node node, const std::vector<Node> &nodes);

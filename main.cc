@@ -1,5 +1,6 @@
 #include <iostream>
 #include "graph.hh"
+#include "Directed.hh"
 
 void print_path(std::vector<Node> nodes) {
     size_t n = nodes.size();
@@ -211,6 +212,26 @@ void test4() {
     }
 }
 
+void test5() {
+    DirectedGraph dgf(2,1);
+    dgf.add_edge({{0,0}, {0,1}});
+    dgf.add_edge({{0,1}, {1,1}});
+    dgf.add_edge({{1,1}, {1,0}});
+    dgf.print_adjacency_matrix();
+    if (dgf.dfs({1,0}, {0,0})) {
+        std::cout << "KO: There is a path between (1,0) and (0,0)\n";
+    } else {
+        std::cout << "OK: There isn't a path between (1,0) and (0,0)\n";
+    }
+    auto path = dgf.dfs_path({0,0},{1,0});
+    if (!path.empty()) {
+        std::cout << "OK: There is a path between (1,0) and (0,0)\n";
+        print_path(path);
+    } else {
+        std::cout << "KO\n";
+    }
+}
+
 int main() {
     std::cout << "test 1 \n\n";
     test1();
@@ -223,4 +244,7 @@ int main() {
 
     std::cout << "------------------------------------------------------------\ntest 4\n\n";
     test4();
+
+    std::cout << "------------------------------------------------------------\ntest 5\n\n";
+    test5();
 }

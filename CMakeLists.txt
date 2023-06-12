@@ -7,4 +7,4 @@ include_directories(.)
 
 add_executable(fractalgraph
         graph.cc
-        main.cc)
+        main.cc Directed.hh Directed.cc)
