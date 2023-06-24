@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 #include "graph.hh"
 #include "Directed.hh"
 
@@ -55,7 +56,7 @@ void test1() {
     path = fractalGraph.dfs_path({1, 0}, {0, 0});
     b = fractalGraph.dfs({1, 0}, {0, 0});
     c = fractalGraph.bfs({1, 0}, {0, 0});
-    if (!path.empty() && b && c ) {
+    if (!path.empty() && b && c) {
         std::cout << "OK: There is a path between (1,0) and (0,0)\n";
         std::cout << "------------------------------------------------------------\n";
         print_path(path);
@@ -129,8 +130,8 @@ void test2() {
 
     std::cout << "------------------------------------------------------------\n";
     path = fractalGraph.dfs_path({0, 0}, {1, 1});
-    b = fractalGraph.dfs({0,0}, {1,1});
-    c = fractalGraph.bfs({0,0}, {1,1});
+    b = fractalGraph.dfs({0, 0}, {1, 1});
+    c = fractalGraph.bfs({0, 0}, {1, 1});
     if (!path.empty() && b && c) {
         std::cout << "OK: There is a path between (0,0) and (1,1)\n";
         std::cout << "------------------------------------------------------------\n";
@@ -192,7 +193,8 @@ void test4() {
     FractalGraph fg(7, 0);
     for (unsigned int i = 0; i < 7; i += 1) {
         for (unsigned int j = i + 1; j < 7; j += 3) {
-            fg.add_edge({{i, 0}, {j, 0}});
+            fg.add_edge({{i, 0},
+                         {j, 0}});
         }
     }
     fg.print_adjacency_lists();
@@ -213,17 +215,20 @@ void test4() {
 }
 
 void test5() {
-    DirectedGraph dgf(2,1);
-    dgf.add_edge({{0,0}, {0,1}});
-    dgf.add_edge({{0,1}, {1,1}});
-    dgf.add_edge({{1,1}, {1,0}});
+    DirectedGraph dgf(2, 1);
+    dgf.add_edge({{0, 0},
+                  {0, 1}});
+    dgf.add_edge({{0, 1},
+                  {1, 1}});
+    dgf.add_edge({{1, 1},
+                  {1, 0}});
     dgf.print_adjacency_matrix();
-    if (dgf.dfs({1,0}, {0,0})) {
+    if (dgf.dfs({1, 0}, {0, 0})) {
         std::cout << "KO: There is a path between (1,0) and (0,0)\n";
     } else {
         std::cout << "OK: There isn't a path between (1,0) and (0,0)\n";
     }
-    auto path = dgf.dfs_path({0,0},{1,0});
+    auto path = dgf.dfs_path({0, 0}, {1, 0});
     if (!path.empty()) {
         std::cout << "OK: There is a path between (1,0) and (0,0)\n";
         print_path(path);
@@ -232,7 +237,44 @@ void test5() {
     }
 }
 
+void example() {
+    FractalGraph fg(4, 2);
+    fg.add_edge({0, 0, 1, 2});
+    fg.add_edge({0, 0, 2, 0});
+    fg.add_edge({0, 1, 0, 0});
+    fg.add_edge({0, 0, 1, 1});
+    fg.add_edge({0, 0, 1, 0});
+    fg.add_edge({3, 0, 2, 2});
+    fg.print_adjacency_lists();
+    auto path = fg.dfs_path({0,0}, {3,0});
+    if (!path.empty()) {
+        print_path(path);
+    }
+}
+
+void benchmark(int n, int k, int e, int i) {
+    unsigned long long t = 0;
+    for (int j = 0; j < i; j++) {
+        FractalGraph fg(n,k,e);
+        std::random_device rd;  // Will be used to obtain a seed for the random number engine
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> vertexes(0, n- 1);
+        std::uniform_int_distribution<> intern_graphs(0, k);
+        unsigned int a = vertexes(gen);
+        unsigned int b = intern_graphs(gen);
+        unsigned int c = vertexes(gen);
+        unsigned int d = intern_graphs(gen);
+        unsigned int now = std::chrono::duration_cast<std::chrono::microseconds >(std::chrono::system_clock::now().time_since_epoch()).count();
+        bool res = fg.dfs({0,0}, {static_cast<unsigned int>(n-1),0});
+        unsigned int after= std::chrono::duration_cast<std::chrono::microseconds >(std::chrono::system_clock::now().time_since_epoch()).count();
+        t += after - now;
+    }
+    std::cout << t / i << '\n';
+}
+
 int main() {
+    benchmark(10,10,500,2000);
+    return 0;
     std::cout << "test 1 \n\n";
     test1();
 

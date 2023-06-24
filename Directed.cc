@@ -36,7 +36,9 @@ void DirectedGraph::add_edge(graphEdge edge) {
 }
 
 void DirectedGraph::add_edges(std::vector<graphEdge> &edges) {
-    std::for_each(edges.begin(), edges.end(), [this](graphEdge edge) { this->add_edge(edge); });
+    for (const auto &it: edges) {
+        add_edge(it);
+    }
 }
 
 DirectedGraph::DirectedGraph(unsigned int number_vertexes, unsigned int number_intern_graph,
