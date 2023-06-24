@@ -16,16 +16,17 @@ fg.add_edge(edge);
 #add a list of edge to fg
 std::vector<graphEdge> edges = {{{0, 1}, {5, 5}}, {{0, 1}}, {4, 2}};
 fg.add_edges(edges);
+
+#creating a ractal graph with 5 copies and 6 vertices and with some edges
+FractalGraph fg2(6, 5, edges);
+
+#creating a ractal graph with 5 copies and 6 vertices and 100 random edges
+FractalGraph fg3(6, 5, 100);
+
+#checking if there is a path between 0_0 and 5_0 in fg3
+bool res = fg3.dfs({0, 0}, {5, 0});
+
+#getting the path between 0_0 and 5_0 in fg3
+std::vector<Node> path = fg3.dfs_path({0, 0}, {5, 0});
 ```
-If you want to add a list of edge, you do the following.
-```c++
-fg.add_edges(edges);
-```
-You could also create a fractal graph like this, if you already defined a list of edge.
-```c++
-FractalGraph fg = new FractalGraph(6,5,edges);
-```
-A fractal graph with random edges can be created like this.
-```c++
-FractalGraph fg = new FractalGraph(6,5,10);
-```
+For a directed fractal graph, you do the same with the class Directed 
