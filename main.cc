@@ -252,6 +252,20 @@ void example() {
     }
 }
 
+void print_progress(float progress) {
+    int barWidth = 70;
+
+    std::cout << "[";
+    int pos = barWidth * progress;
+    for (int i = 0; i < barWidth; ++i) {
+        if (i < pos) std::cout << "=";
+        else if (i == pos) std::cout << ">";
+        else std::cout << " ";
+    }
+    std::cout << "] " << int(progress * 100.0) << " %\r";
+    std::cout.flush();
+}
+
 void benchmark(int n, int k, int e, int i) {
     unsigned long long t = 0;
     for (int j = 0; j < i; j++) {
@@ -265,15 +279,16 @@ void benchmark(int n, int k, int e, int i) {
         unsigned int c = vertexes(gen);
         unsigned int d = intern_graphs(gen);
         unsigned int now = std::chrono::duration_cast<std::chrono::microseconds >(std::chrono::system_clock::now().time_since_epoch()).count();
-        bool res = fg.dfs({0,0}, {static_cast<unsigned int>(n-1),0});
+        bool res = fg.dfs({a,b}, {c,d});
         unsigned int after= std::chrono::duration_cast<std::chrono::microseconds >(std::chrono::system_clock::now().time_since_epoch()).count();
         t += after - now;
+        print_progress((float) j / (float) i);
     }
     std::cout << t / i << '\n';
 }
 
 int main() {
-    benchmark(10,10,500,2000);
+    benchmark(100,100,1000,1000);
     return 0;
     std::cout << "test 1 \n\n";
     test1();
